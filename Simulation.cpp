@@ -22,8 +22,12 @@ double Simulation::infectiousness_function(double tau) const {
 
 
 double Simulation::susceptibility_function(double tau) const {
-    double ex = exp(-cfg.susc_k * (tau - cfg.susc_x0));
-    return ex == HUGE_VAL ? 1 : 1 - cfg.susc_l / (1 + ex);
+    if (tau < 0) {
+        return 0;
+    } else {
+        double ex = exp(-cfg.susc_k * (tau - cfg.susc_x0));
+        return ex == HUGE_VAL ? 1 : 1 - cfg.susc_l / (1 + ex);
+    }
 }
 
 
@@ -34,15 +38,12 @@ void Simulation::simulate() {
     this->Q.push(first_infection);
     while (!Q.empty()) {
         event e = Q.top();
-        int day = (int) e.time;
+        if (e.time > cfg.t_max) {
+            break;
+        }
         switch (e.action) {
             case Infection:
 //                std::cout << ".";
-                if (!this->cases_by_day.count(day)) {
-                    this->cases_by_day[day] = 1;
-                } else {
-                    this->cases_by_day[day] = this->cases_by_day[day] + 1;
-                }
                 this->infect(e);
                 break;
             case Recovery:
@@ -60,13 +61,33 @@ void Simulation::infect(event incoming_event) {
     if (rand_uni > susceptibility) {
         return;
     }
+
+    // recovery
+    incoming_node.last_recovery_time = incoming_event.time + cfg.inf_length;
+
+    // accounting for infection
+
+    int day = (int) incoming_event.time;
+    if (!this->cases_by_day.count(day)) {
+        this->cases_by_day[day] = 1;
+        // todo output count by previous day, or collect other statistics
+        if (day > 0) {
+            std::cout << day - 1 << "," << this->cases_by_day[day - 1] << std::endl;
+        }
+    } else {
+        this->cases_by_day[day] = this->cases_by_day[day] + 1;
+    }
+
     // spreading infection to other nodes
     std::vector<double> inf_times = this->get_inf_times(cfg.beta_from); // todo loop over
+
     for (double t_inf : inf_times) {
         double t = incoming_event.time + t_inf;
+/*
         if (t > cfg.t_max) {
-            return;
+            break;
         }
+*/
         node& target = this->select_contact();
         // infection event
         event infect = {t, target.index, Infection};
@@ -75,8 +96,6 @@ void Simulation::infect(event incoming_event) {
         event recovery = {t + cfg.inf_length, target.index, Recovery};
         Q.push(recovery);
     }
-    // recovery
-    incoming_node.last_recovery_time = incoming_event.time + cfg.inf_length;
 }
 
 node& Simulation::select_contact() {

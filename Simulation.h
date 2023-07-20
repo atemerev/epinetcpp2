@@ -32,14 +32,15 @@ public:
 
     void dump_state();
 
-    std::vector<double> get_inf_times(double beta) {
+    [[nodiscard]]
+    std::vector<double> get_inf_times(double beta) const {
         std::vector<double> result;
 
         double t = 0;
-        while (t < cfg.t_max) {
+        while (t < cfg.inf_length) {
             double u = uniform(mt());
             t = t - log(u) / beta;
-            if (t < cfg.t_max) {
+            if (t < cfg.inf_length) {
                 double rate = infectiousness_function(t);
                 double s = uniform(mt());
                 if (s < rate / cfg.inf_max) {

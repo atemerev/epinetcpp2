@@ -5,10 +5,10 @@
 int main() {
     // init config
     config config = {
-        .N = 10000,
-        .t_max = 1200.0,
-        .beta_from = 1.4,
-        .beta_to = 1.5,
+        .N = 100000,
+        .t_max = 365 * 2,
+        .beta_from = 2.8,
+        .beta_to = 1.6,
         .beta_step = 0.05,
         .inf_length = 20.0,
         .inf_max = 0.10908088834560385,
@@ -23,7 +23,8 @@ int main() {
     Simulation simulation = Simulation(config);
     // run with the single beta
     simulation.simulate();
-    simulation.dump_state();
+//    simulation.dump_state();
+//    std::cout << simulation.susceptibility_function(-50) << std::endl;
     return 0;
 }
 
