@@ -79,15 +79,10 @@ void Simulation::infect(event incoming_event) {
     }
 
     // spreading infection to other nodes
-    std::vector<double> inf_times = this->get_inf_times(cfg.beta_from); // todo loop over
+    std::vector<double> inf_times = this->get_inf_times(cfg.beta); // todo loop over
 
     for (double t_inf : inf_times) {
         double t = incoming_event.time + t_inf;
-/*
-        if (t > cfg.t_max) {
-            break;
-        }
-*/
         node& target = this->select_contact();
         // infection event
         event infect = {t, target.index, Infection};

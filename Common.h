@@ -26,12 +26,11 @@ struct event {
 struct config {
     int N;
     double t_max;
-    double beta_from;
-    double beta_to;
-    double beta_step;
+    double beta;
+
     double inf_length;
     double inf_max;
-//    double inf_mean;
+
     double susc_k;
     double susc_l;
     double susc_x0;
