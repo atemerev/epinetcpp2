@@ -4,7 +4,6 @@
 #include <queue>
 #include <cmath>
 #include "Common.h"
-#include "ini.h"
 #include "util.h"
 
 class Simulation {

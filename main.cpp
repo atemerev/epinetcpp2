@@ -1,5 +1,3 @@
-#include <iostream>
-#include "ini.h"
 #include "Simulation.h"
 #include "include/CLI11.hpp"
 
