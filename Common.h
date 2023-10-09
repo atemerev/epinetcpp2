@@ -5,7 +5,7 @@
 enum Action {Infection, Recovery};
 
 struct node {
-    uint32_t index;
+    int index;
     double infectivity;
     double susceptibility;
     double last_recovery_time;
@@ -14,7 +14,7 @@ struct node {
 
 struct event {
     double time;
-    uint32_t node_index;
+    int node_index;
     Action action;
 
     bool operator >(const event& other) const {
@@ -38,4 +38,6 @@ struct config {
     double inf_scale;
     double inf_mean;
     double inf_k;
+
+    double sp_lambda; // spontaneous infection rate
 };

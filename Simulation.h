@@ -50,5 +50,19 @@ public:
         return result;
     }
 
+    [[nodiscard]]
+    std::vector<double> get_spontaneous_infection_times(double lambda) const {
+        std::vector<double> result;
+        double t = 0;
+        while (t < cfg.t_max) {
+            double u = uniform(mt());
+            t = t - log(u) / lambda;
+            if (t < cfg.t_max) {
+                result.push_back(t);
+            }
+        }
+        return result;
+    }
+
     node &select_contact();
 };

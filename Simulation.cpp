@@ -3,8 +3,16 @@
 #include "Common.h"
 #include "util.h"
 
+node tourist_node {
+    .index = -1,
+    .infectivity = 1.0,
+    .susceptibility = 1.0,
+    .last_recovery_time = 0,
+    .recovery_count = 0
+};
+
 Simulation::Simulation(config &conf) : cfg(conf) {
-    for (uint32_t i = 0; i < cfg.N; i++) {
+    for (int i = 0; i < cfg.N; i++) {
         node n = {i, 0.0, 1.0, 0.0, 0};
         nodes.push_back(n);
     }
@@ -36,6 +44,14 @@ void Simulation::simulate() {
     // Assuming a single initial infected (first in the index)
     event first_infection = {0.0, 0, Infection};
     this->Q.push(first_infection);
+
+    // Pushing spontaneous infection events
+    std::vector<double> sp_inf_times = this->get_spontaneous_infection_times(cfg.sp_lambda);
+    for (double t : sp_inf_times) {
+        event sp_infection = {t, -1, Infection};
+        this->Q.push(sp_infection);
+    }
+
     while (!Q.empty()) {
         event e = Q.top();
         if (e.time > cfg.t_max) {
@@ -54,7 +70,7 @@ void Simulation::simulate() {
 }
 
 void Simulation::infect(event incoming_event) {
-    node& incoming_node = this->nodes.at(incoming_event.node_index);
+    node& incoming_node = incoming_event.node_index >= 0 ? this->nodes.at(incoming_event.node_index) : tourist_node;
     double tau = incoming_event.time - incoming_node.last_recovery_time;
     double susceptibility = incoming_node.last_recovery_time <= 0 ? 1.0 : this->susceptibility_function(tau);
     double rand_uni = uniform(mt());
