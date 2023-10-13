@@ -40,4 +40,5 @@ struct config {
     double inf_k;
 
     double sp_lambda; // spontaneous infection rate
+    std::string output_file;
 };

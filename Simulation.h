@@ -3,6 +3,7 @@
 #include <random>
 #include <queue>
 #include <cmath>
+#include <fstream>
 #include "Common.h"
 #include "util.h"
 
@@ -15,6 +16,7 @@ private:
     }
 
     config& cfg;
+    std::ofstream output;
 
     std::vector<node> nodes = {}; // all nodes vector (the source of truth)
     std::priority_queue<event, std::vector<event>, std::greater<>> Q = {}; // event queue
@@ -25,11 +27,13 @@ private:
 
 public:
     explicit Simulation(config& cfg);
+    ~Simulation();
+
     [[nodiscard]] double infectiousness_function(double tau) const;
     [[nodiscard]] double susceptibility_function(double tau) const;
     void simulate();
 
-    void dump_state();
+    void dump_state(int day);
 
     [[nodiscard]]
     std::vector<double> get_inf_times(double beta) const {
