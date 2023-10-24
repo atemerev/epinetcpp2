@@ -33,7 +33,7 @@ public:
     [[nodiscard]] double susceptibility_function(double tau) const;
     void simulate();
 
-    void dump_state(int day);
+    void dump_state(int day, std::ostream& out);
 
     [[nodiscard]]
     std::vector<double> get_inf_times(double beta) const {

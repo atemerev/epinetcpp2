@@ -1,4 +1,5 @@
 #include <iostream>
+#include <ostream>
 #include "Simulation.h"
 #include "Common.h"
 #include "util.h"
@@ -28,12 +29,6 @@ double Simulation::infectiousness_function(double tau) const {
     return logn(tau, cfg.inf_scale, cfg.inf_mean, cfg.inf_k);
 }
 
-// todo susceptibility function seems to be incorrect!
-// todo check manually, e.g. fresh nodes have susceptibility of 1.0, and with disease currently in progress - 0.0
-// todo keep both last infected and last recovered times? so if t - last_infected < disease_length, time since
-//  recovery is negative, and susceptibility is 1.0
-
-
 double Simulation::susceptibility_function(double tau) const {
     if (tau < 0) {
         return 0;
@@ -42,7 +37,6 @@ double Simulation::susceptibility_function(double tau) const {
         return ex == HUGE_VAL ? 1 : 1 - cfg.susc_l / (1 + ex);
     }
 }
-
 
 void Simulation::simulate() {
 
@@ -96,7 +90,8 @@ void Simulation::infect(event incoming_event) {
         this->cases_by_day[day] = 1;
         // todo output count by previous day, or collect other statistics
         if (day > 0) {
-            this->dump_state(day);
+            this->dump_state(day, std::cout);
+            this->dump_state(day, this->output);
         }
     } else {
         this->cases_by_day[day] = this->cases_by_day[day] + 1;
@@ -123,8 +118,14 @@ node& Simulation::select_contact() {
     return this->nodes.at(i);
 }
 
-void Simulation::dump_state(int day) {
-    std::cout << day - 1 << "," << this->cases_by_day[day - 1] << std::endl;
-    this->output << day - 1 << "," << this->cases_by_day[day - 1] << std::endl;
-    this->output.flush();
+void Simulation::dump_state(int day, std::ostream& out) {
+    int infected_count = 0;
+    for (node n : this->nodes) {
+        int delta_t = (day - 1) - (int) n.last_recovery_time;
+        if (delta_t < 0 && delta_t > -this->cfg.inf_length) {
+            infected_count++;
+        }
+    }
+    out << day - 1 << "," << this->cases_by_day[day - 1] << "," << infected_count << std::endl;
+    out.flush();
 }
