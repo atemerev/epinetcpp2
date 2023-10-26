@@ -120,12 +120,19 @@ node& Simulation::select_contact() {
 
 void Simulation::dump_state(int day, std::ostream& out) {
     int infected_count = 0;
+    double avg_susceptibility = 0;
     for (node n : this->nodes) {
         int delta_t = (day - 1) - (int) n.last_recovery_time;
         if (delta_t < 0 && delta_t > -this->cfg.inf_length) {
             infected_count++;
         }
+        double susceptibility = n.last_recovery_time <= 0 ? 1.0 : susceptibility_function(delta_t);
+        avg_susceptibility += susceptibility;
     }
-    out << day - 1 << "," << this->cases_by_day[day - 1] << "," << infected_count << std::endl;
+    avg_susceptibility = avg_susceptibility / (double) this->nodes.size();
+    out << day - 1 << ","
+        << this->cases_by_day[day - 1] << ","
+        << infected_count << ","
+        << avg_susceptibility << std::endl;
     out.flush();
 }
