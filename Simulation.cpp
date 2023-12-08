@@ -41,8 +41,10 @@ double Simulation::susceptibility_function(double tau) const {
 void Simulation::simulate() {
 
     // Assuming a single initial infected (first in the index)
-    event first_infection = {0.0, 0, Infection};
-    this->Q.push(first_infection);
+    for (int i = 0; i < this->cfg.n_initial; i++) {
+        event initial_infection = {0.0, i, Infection};
+        this->Q.push(initial_infection);
+    }
 
     // Pushing spontaneous infection events
     std::vector<double> sp_inf_times = this->get_spontaneous_infection_times(cfg.sp_lambda);

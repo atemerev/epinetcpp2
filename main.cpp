@@ -15,11 +15,13 @@ int main(int argc, char** argv) {
     double conf_inf_mean = 1.4915;
     double conf_inf_k = 0.293;
     double conf_sp_lambda = 0;
+    int conf_n_initial = 1;
 
     std::string conf_output_file = "out.csv";
 
     CLI::App app("EpiNet2 stochastic epidemic simulator");
     app.add_option("-N,--num-people", conf_N, "Number of people in the population")->required();
+    app.add_option("-n,--n-initial", conf_n_initial, "Number of initially infected people");
     app.add_option("-t,--time", conf_t_max, "Simulation time")->required();
     app.add_option("-b,--beta", conf_beta, "Beta: infectiousness modifier")->required();
     app.add_option("-f,--output-file", conf_output_file, "Output file name");
@@ -53,6 +55,7 @@ int main(int argc, char** argv) {
         .inf_mean = conf_inf_mean,
         .inf_k = conf_inf_k,
         .sp_lambda = conf_sp_lambda,
+        .n_initial = conf_n_initial,
         .output_file = conf_output_file
     };
 
