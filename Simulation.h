@@ -68,5 +68,18 @@ public:
         return result;
     }
 
+    [[nodiscard]]
+    std::vector<double> get_deterministic_infection_times(double lambda) const {
+        std::vector<double> result;
+        double t = 0;
+        while (t < cfg.t_max) {
+            t = t + 1 / lambda;
+            if (t < cfg.t_max) {
+                result.push_back(t);
+            }
+        }
+        return result;
+    }
+
     node &select_contact();
 };
