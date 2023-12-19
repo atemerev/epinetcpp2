@@ -60,7 +60,7 @@ void Simulation::simulate() {
 
     // deterministic
 
-    std::vector<double> sp_inf_times = this->get_spontaneous_infection_times(cfg.sp_lambda);
+    std::vector<double> sp_inf_times = this->get_deterministic_infection_times(cfg.sp_lambda);
     for (double t : sp_inf_times) {
         event sp_infection = {t, -1, Infection};
         this->Q.push(sp_infection);
