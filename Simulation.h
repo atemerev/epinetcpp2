@@ -36,14 +36,14 @@ public:
     void dump_state(int day, std::ostream& out);
 
     [[nodiscard]]
-    std::vector<double> get_inf_times(double beta) const {
+    std::vector<double> get_inf_times(double beta, double inf_length) const {
         std::vector<double> result;
 
         double t = 0;
-        while (t < cfg.inf_length) {
+        while (t < inf_length) {
             double u = uniform(mt());
             t = t - log(u) / beta;
-            if (t < cfg.inf_length) {
+            if (t < inf_length) {
                 double rate = infectiousness_function(t);
                 double s = uniform(mt());
                 if (s < rate / cfg.inf_max) {
@@ -52,6 +52,11 @@ public:
             }
         }
         return result;
+    }
+
+    static double get_inter_event_time_poisson(double rate) {
+        const double u = uniform(mt());
+        return - log(u) / rate;
     }
 
     [[nodiscard]]

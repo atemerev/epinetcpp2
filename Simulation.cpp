@@ -98,7 +98,8 @@ void Simulation::infect(event incoming_event) {
     // infected
 
     // setting up recovery
-    incoming_node.last_recovery_time = incoming_event.time + cfg.inf_length;
+    double recovery_length = get_inter_event_time_poisson(1.0 / cfg.inf_length); // todo poisson recovery
+    incoming_node.last_recovery_time = incoming_event.time + recovery_length;
 
     int day = (int) incoming_event.time;
     if (!this->cases_by_day.count(day)) {
@@ -113,7 +114,7 @@ void Simulation::infect(event incoming_event) {
     }
 
     // spreading infection to other nodes
-    std::vector<double> inf_times = this->get_inf_times(cfg.beta); // todo loop over
+    std::vector<double> inf_times = this->get_inf_times(cfg.beta, recovery_length); // todo loop over
 
     for (double t_inf : inf_times) {
         double t = incoming_event.time + t_inf;
@@ -122,7 +123,7 @@ void Simulation::infect(event incoming_event) {
         event infect = {t, target.index, Infection};
         Q.push(infect);
         // recovery event (for stats purposes)
-        event recovery = {t + cfg.inf_length, target.index, Recovery};
+        event recovery = {t + recovery_length, target.index, Recovery};
         Q.push(recovery);
     }
 }
