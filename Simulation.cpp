@@ -14,7 +14,7 @@ node tourist_node {
 
 Simulation::Simulation(config &conf) : cfg(conf) {
     for (int i = 0; i < cfg.N; i++) {
-        node n = {i, 0.0, 1.0, 0.0, 0};
+        node n = {i, 0.0, conf.susc_initial, 0.0, 0};
         nodes.push_back(n);
     }
     this->cases_by_day = std::map<int, int>();

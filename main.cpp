@@ -15,6 +15,7 @@ int main(int argc, char** argv) {
     double conf_inf_mean = 1.4915;
     double conf_inf_k = 0.293;
     double conf_sp_lambda = 0;
+    double conf_susc_initial = 1.0;
     int conf_n_initial = 1;
 
     std::string conf_output_file = "out.csv";
@@ -34,6 +35,7 @@ int main(int argc, char** argv) {
     app.add_option("-m,--mean-infectiousness", conf_inf_mean, "Infectiousness curve: mean time");
     app.add_option("-K,--k-infectiousness", conf_inf_k, "Infectiousness curve: shape parameter");
     app.add_option("-L,--lambda-spontaneous", conf_sp_lambda, "Spontaneous infection rate");
+    app.add_option("-S,--susc-initial", conf_susc_initial, "Initial susceptibility (0.0 to 1.0)");
 
     try {
         app.parse(argc, argv);
@@ -56,7 +58,8 @@ int main(int argc, char** argv) {
         .inf_k = conf_inf_k,
         .sp_lambda = conf_sp_lambda,
         .n_initial = conf_n_initial,
-        .output_file = conf_output_file
+        .output_file = conf_output_file,
+        .susc_initial = conf_susc_initial
     };
 
     // init simulation

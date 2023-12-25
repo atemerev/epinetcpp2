@@ -41,5 +41,6 @@ struct config {
 
     double sp_lambda; // spontaneous infection rate
     int n_initial; // initial infected
+    double susc_initial; // initial susceptibility
     std::string output_file;
 };
