@@ -88,7 +88,7 @@ void Simulation::infect(event incoming_event) {
     // todo what if already infected and not recovered yet?
     // ok, recovery time might be negative
     double tau = incoming_event.time - incoming_node.last_recovery_time;
-    double susceptibility = incoming_node.last_recovery_time <= 0 ? 1.0 : this->susceptibility_function(tau);
+    double susceptibility = incoming_node.last_recovery_time <= 0 ? cfg.susc_initial : this->susceptibility_function(tau);
     double rand_uni = uniform(mt());
     if (rand_uni > susceptibility) {
         // not infected
@@ -142,7 +142,7 @@ void Simulation::dump_state(int day, std::ostream& out) {
         if (delta_t < 0 && delta_t > -this->cfg.inf_length) {
             infected_count++;
         }
-        double susceptibility = n.last_recovery_time <= 0 ? 1.0 : susceptibility_function(delta_t);
+        double susceptibility = n.last_recovery_time <= 0 ? this->cfg.susc_initial : susceptibility_function(delta_t);
         avg_susceptibility += susceptibility;
     }
     avg_susceptibility = avg_susceptibility / (double) this->nodes.size();
