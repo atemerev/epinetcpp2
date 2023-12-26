@@ -58,8 +58,8 @@ int main(int argc, char** argv) {
         .inf_k = conf_inf_k,
         .sp_lambda = conf_sp_lambda,
         .n_initial = conf_n_initial,
-        .output_file = conf_output_file,
-        .susc_initial = conf_susc_initial
+        .susc_initial = conf_susc_initial,
+        .output_file = conf_output_file
     };
 
     // init simulation
