@@ -25,9 +25,14 @@ Simulation::~Simulation() {
     this->output.close();
 }
 
+// double Simulation::infectiousness_function(double tau) const {
+//     return logn(tau, cfg.inf_scale, cfg.inf_mean, cfg.inf_k);
+// }
+
 double Simulation::infectiousness_function(double tau) const {
-    return logn(tau, cfg.inf_scale, cfg.inf_mean, cfg.inf_k);
+    return cfg.inf_scale;
 }
+
 
 double Simulation::susceptibility_function(double tau) const {
     if (tau < 0) {
@@ -98,7 +103,8 @@ void Simulation::infect(event incoming_event) {
     // infected
 
     // setting up recovery
-    double recovery_length = get_inter_event_time_poisson(1.0 / cfg.inf_length); // todo poisson recovery
+    // double recovery_length = get_inter_event_time_poisson(1.0 / cfg.inf_length); // todo poisson recovery
+    double recovery_length = this->cfg.inf_length;
     incoming_node.last_recovery_time = incoming_event.time + recovery_length;
 
     int day = (int) incoming_event.time;

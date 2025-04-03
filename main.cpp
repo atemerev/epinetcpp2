@@ -5,7 +5,7 @@ int main(int argc, char** argv) {
 
     int conf_N = 100000;
     double conf_t_max = 365 * 2;
-    double conf_beta = 1.5;
+    double conf_beta = 0.2;
     double conf_inf_length = 20.0;
     double conf_inf_max = 0.10908;
     double conf_susc_k = -0.009776;
