@@ -1,5 +1,7 @@
 #pragma once
 
+#include <random>
+
 namespace epi {
 
 static std::mt19937 &mt() {
