@@ -1,47 +1,36 @@
 #include "infection.h"
-
-#include "util.h"
-
-#include <cmath>
+#include "util.h" // For epi::logn and epi::uniform (though uniform not directly used here, logn is)
+#include <cmath>   // For std::exp, HUGE_VAL
 
 namespace epi::infect {
 
-static std::function<double(double)> const_infectivity(const double beta) {
-    return [beta](double t) { return beta; };
+InfectivityProfile create_const_infectivity_profile(const config& cfg) {
+    auto func = [beta = cfg.beta](double /*tau*/) { // tau is unused for constant infectivity
+        return beta;
+    };
+    // For a constant function f(x) = C, the max value is C.
+    return {cfg.beta, func};
 }
 
-double const_infectivity(config cfg, double tau) { return cfg.beta; }
-
-double log_susceptibility(double tau) const {
-    if (tau < 0) {
-        return 0;
-    } else {
-        double ex = exp(-cfg.susc_k * (tau - cfg.susc_x0));
-        return ex == HUGE_VAL ? 1 : 1 - cfg.susc_l / (1 + ex);
-    }
+InfectivityProfile create_lognormal_infectivity_profile(const config& cfg) {
+    auto func = [inf_scale = cfg.inf_scale, inf_mean = cfg.inf_mean, inf_k = cfg.inf_k](double tau) {
+        return epi::logn(tau, inf_scale, inf_mean, inf_k);
+    };
+    // The max value for this profile is provided by cfg.inf_max
+    return {cfg.inf_max, func};
 }
 
-
-static std::vector<double> get_infection_times(const double beta,
-                                               const double disease_length,
-                                               const InfectivityProfile &profile) {
-    std::vector<double> result;
-
-    double t = 0;
-    while (t < disease_length) {
-        double u = uniform();
-        t = t - log(u) / beta;
-        if (t < disease_length) {
-            double rate = profile.infectivity_function(t);
-            double s = uniform();
-            if (s < rate / profile.max_function_value) {
-                result.push_back(t);
-            }
+std::function<double(double)> create_sigmoid_susceptibility_function(const config& cfg) {
+    return [susc_k = cfg.susc_k, susc_l = cfg.susc_l, susc_x0 = cfg.susc_x0](double tau) {
+        if (tau < 0) {
+            return 0.0;
+        } else {
+            double ex = std::exp(-susc_k * (tau - susc_x0));
+            // Check for overflow before division
+            if (ex == HUGE_VAL) return 1.0; // or some other appropriate limit
+            return 1.0 - susc_l / (1.0 + ex);
         }
-    }
-    return result;
+    };
 }
-
-
 
 } // namespace epi::infect

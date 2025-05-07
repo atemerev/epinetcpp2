@@ -1,5 +1,6 @@
 #include "Simulation.h"
 #include "include/CLI11.hpp"
+#include "infection.h" // Include the header for factory functions
 
 int main(int argc, char **argv) {
     int conf_N = 100000;
@@ -58,7 +59,7 @@ int main(int argc, char **argv) {
     }
 
     // init config
-    config config = {.N = conf_N,
+    config config_obj = {.N = conf_N, // Renamed to avoid conflict with 'config' type
                      .t_max = conf_t_max,
                      .beta = conf_beta,
                      .inf_length = conf_inf_length,
@@ -74,30 +75,50 @@ int main(int argc, char **argv) {
                      .susc_initial = conf_susc_initial,
                      .output_file = conf_output_file};
 
-    Simulation simulation = Simulation(config);
+    // Create the functional objects using factories from infection.h
+    // Example: using constant infectivity and sigmoid susceptibility
+    auto infect_profile = epi::infect::create_const_infectivity_profile(config_obj);
+    // Or, to use lognormal infectivity:
+    // auto infect_profile = epi::infect::create_lognormal_infectivity_profile(config_obj);
+    
+    auto susc_func = epi::infect::create_sigmoid_susceptibility_function(config_obj);
+
+    // Pass them to the Simulation constructor
+    Simulation simulation = Simulation(config_obj, infect_profile, susc_func);
 
     /*
-    std::cout << simulation.infectiousness_function(3.0) << std::endl;
-    std::cout << simulation.susceptibility_function(108) << std::endl;
+    // To test the functions directly (after creating them as above):
+    // std::cout << infect_profile.infectivity_function(3.0) << std::endl;
+    // std::cout << susc_func(108.0) << std::endl;
 
-    const double N_TRIALS = 1000;
+    // The get_inf_times is a member of Simulation, so test via an instance
+    // std::vector<double> sp_inf_times =
+    //     simulation.get_inf_times(config_obj.beta, config_obj.inf_length);
+    // for (double t : sp_inf_times) {
+    //     std::cout << t << std::endl;
+    // }
+
+
+    // The old test block for get_inf_times:
+    const double N_TRIALS = 1000; // This was outside main, ensure it's defined if used
 
     double trials_sum = 0.0;
-    // double trials_cnt = 0.0;
 
     for (int i = 0; i < N_TRIALS; i++) {
+        // Note: get_inf_times is now a const member of Simulation.
+        // It uses the configured infectivity_profile_ within the simulation instance.
+        // The 'beta' parameter to get_inf_times is the base rate for event generation.
         std::vector<double> sp_inf_times =
-            simulation.get_inf_times(config.beta, config.inf_length);
+            simulation.get_inf_times(config_obj.beta, config_obj.inf_length);
         trials_sum += double(sp_inf_times.size());
-        // trials_cnt += 1;
-        // for (double t : sp_inf_times) {
-        //     std::cout << t << std::endl;
-        // }
     }
-
-    std::cout << "Average infections: " << trials_sum / N_TRIALS << std::endl;
+    std::cout << "Average infections from one event: " << trials_sum / N_TRIALS << std::endl;
     */
 
     simulation.simulate();
     return 0;
 }
+// Note: The previous SEARCH block for main.cpp already contained the replacement for this section.
+// This SEARCH block is based on the original state of main.cpp provided.
+// The changes above have already integrated the test block correctly.
+// This block is effectively a no-op if the previous main.cpp changes were applied.
