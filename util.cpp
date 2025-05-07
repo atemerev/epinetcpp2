@@ -1,7 +1,5 @@
-//
-// Created by atemerev on 5/24/23.
-//
 #include <cmath>
+namespace epi {
 
 double logn(double x, double s, double m, double k) {
     if (x == 0) {
@@ -12,3 +10,4 @@ double logn(double x, double s, double m, double k) {
     return k * m1 * exp(t);
 }
 
+}

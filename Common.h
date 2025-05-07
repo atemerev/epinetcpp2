@@ -1,8 +1,14 @@
 #pragma once
 #include <cstdint>
+#include <functional>
 #include <map>
 
 enum Action {Infection, Recovery};
+
+struct InfectivityProfile {
+    double max_function_value;
+    std::function<double(double)> infectivity_function;
+};
 
 struct node {
     int index;

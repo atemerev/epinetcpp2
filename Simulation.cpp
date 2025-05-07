@@ -30,7 +30,7 @@ Simulation::~Simulation() {
 // }
 
 double Simulation::infectiousness_function(double tau) const {
-    return cfg.inf_scale;
+    return cfg.beta;
 }
 
 
@@ -94,7 +94,7 @@ void Simulation::infect(event incoming_event) {
     // ok, recovery time might be negative
     double tau = incoming_event.time - incoming_node.last_recovery_time;
     double susceptibility = incoming_node.last_recovery_time <= 0 ? cfg.susc_initial : this->susceptibility_function(tau);
-    double rand_uni = uniform(mt());
+    double rand_uni = epi::uniform();
     if (rand_uni > susceptibility) {
         // not infected
         return;
@@ -136,7 +136,7 @@ void Simulation::infect(event incoming_event) {
 
 node& Simulation::select_contact() {
     std::uniform_int_distribution<> idist(0, (int) this->nodes.size() - 1);
-    int i = idist(mt());
+    int i = idist(epi::mt());
     return this->nodes.at(i);
 }
 

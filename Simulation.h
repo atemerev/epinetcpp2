@@ -9,11 +9,6 @@
 
 class Simulation {
 private:
-    static std::mt19937 &mt() {
-        thread_local static std::random_device srd;
-        thread_local static std::mt19937 smt(srd());
-        return smt;
-    }
 
     config& cfg;
     std::ofstream output;
@@ -41,11 +36,11 @@ public:
 
         double t = 0;
         while (t < inf_length) {
-            double u = uniform(mt());
+            double u = epi::uniform();
             t = t - log(u) / beta;
             if (t < inf_length) {
                 double rate = infectiousness_function(t);
-                double s = uniform(mt());
+                double s = epi::uniform();
                 if (s < rate / cfg.inf_max) {
                     result.push_back(t);
                 }
@@ -55,7 +50,7 @@ public:
     }
 
     static double get_inter_event_time_poisson(double rate) {
-        const double u = uniform(mt());
+        const double u = epi::uniform();
         return - log(u) / rate;
     }
 
@@ -64,7 +59,7 @@ public:
         std::vector<double> result;
         double t = 0;
         while (t < cfg.t_max) {
-            double u = uniform(mt());
+            double u = epi::uniform();
             t = t - log(u) / lambda;
             if (t < cfg.t_max) {
                 result.push_back(t);
