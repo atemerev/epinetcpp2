@@ -5,16 +5,14 @@
 namespace epi::infect {
 
 /// Creates an InfectivityProfile for a constant infectivity model.
-/// The infectivity is cfg.beta, and the max_function_value is also cfg.beta.
-InfectivityProfile create_const_infectivity_profile(const config& cfg);
+InfectivityProfile create_const_infectivity_profile(double beta);
 
 /// Creates an InfectivityProfile for a log-normal infectivity model.
-/// Uses cfg.inf_scale, cfg.inf_mean, cfg.inf_k for the logn function
-/// and cfg.inf_max for the max_function_value.
-InfectivityProfile create_lognormal_infectivity_profile(const config& cfg);
+InfectivityProfile create_lognormal_infectivity_profile(double scale, double mean, double k, double max_value);
 
 /// Creates a susceptibility function based on a sigmoid-like curve.
-/// Uses cfg.susc_k, cfg.susc_l, cfg.susc_x0.
-std::function<double(double)> create_sigmoid_susceptibility_function(const config& cfg);
+std::function<double(double)> create_sigmoid_susceptibility_function(double k, double l, double x0);
+
+std::function<double(double)> create_poisson_recovery_function(double recovery_length_expectation);
 
 } // namespace epi::infect

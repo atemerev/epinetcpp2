@@ -20,12 +20,16 @@ private:
     // Store the functional objects
     InfectivityProfile infectivity_profile_;
     std::function<double(double)> susceptibility_func_;
+    std::function<double(double)> recovery_func_;
 
     void infect(event incoming_event);
 
 public:
     // Modified constructor
-    explicit Simulation(config& cfg, InfectivityProfile infect_profile, std::function<double(double)> susc_func);
+    explicit Simulation(config& cfg, InfectivityProfile infect_profile,
+        std::function<double(double)> susc_func,
+        std::function<double(double)> recovery_func);
+
     ~Simulation();
 
     // These now use the stored functional objects

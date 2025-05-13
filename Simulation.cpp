@@ -16,10 +16,13 @@ node tourist_node {
 // Updated constructor definition
 Simulation::Simulation(config &conf,
                        InfectivityProfile infect_profile,
-                       std::function<double(double)> susc_func)
+                       std::function<double(double)> susc_func,
+                       std::function<double(double)> recovery_func
+                       )
     : cfg(conf),
       infectivity_profile_(std::move(infect_profile)),
-      susceptibility_func_(std::move(susc_func)) {
+      susceptibility_func_(std::move(susc_func)),
+      recovery_func_(std::move(recovery_func)) {
     for (int i = 0; i < cfg.N; i++) {
         node n = {i, 0.0, conf.susc_initial, 0.0, 0};
         nodes.push_back(n);
@@ -104,7 +107,8 @@ void Simulation::infect(event incoming_event) {
     // infected
 
     // setting up recovery for the currently infected node
-    double recovery_length = this->cfg.inf_length; // Assuming fixed infection length for now
+    double recovery_length = this->recovery_func_(incoming_event.time);
+
     if (incoming_event.node_index >=0) { // Regular nodes update their state
         incoming_node.last_recovery_time = incoming_event.time + recovery_length;
         incoming_node.recovery_count++;
@@ -137,16 +141,6 @@ void Simulation::infect(event incoming_event) {
         event new_infection_event = {t_actual_infection, target.index, Infection};
         Q.push(new_infection_event);
         
-        // Schedule recovery for the target. Note: This is a simplified recovery event.
-        // If recovery itself has complex logic or affects stats, it might need more detail.
-        // For now, it mainly helps in tracking when a node *might* recover.
-        // The actual state update for recovery happens when an Infection event is processed for that node again,
-        // or if a dedicated Recovery action in the queue was processed.
-        // Let's assume last_recovery_time is the primary state.
-        // Adding a Recovery event to the queue is not strictly necessary if infect() handles all state,
-        // but can be useful for other statistics or more complex recovery models.
-        // For now, we'll keep it simple: the primary effect of infection is scheduling new infections.
-        // The target's last_recovery_time will be updated when *its* infection event (new_infection_event) is processed.
     }
 }
 

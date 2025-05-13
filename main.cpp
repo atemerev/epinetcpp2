@@ -7,6 +7,7 @@ int main(int argc, char **argv) {
     double conf_t_max = 365 * 2;
     double conf_beta = 0.2;
     double conf_inf_length = 10.0;
+    double conf_rec_length = 20; // recovery (expectation) length
     // double conf_inf_max = 0.10908;
     double conf_inf_max = 0.2;
     double conf_susc_k = -0.009776;
@@ -77,14 +78,17 @@ int main(int argc, char **argv) {
 
     // Create the functional objects using factories from infection.h
     // Example: using constant infectivity and sigmoid susceptibility
-    auto infect_profile = epi::infect::create_const_infectivity_profile(config_obj);
+    auto infect_profile = epi::infect::create_const_infectivity_profile(config_obj.beta);
     // Or, to use lognormal infectivity:
     // auto infect_profile = epi::infect::create_lognormal_infectivity_profile(config_obj);
     
-    auto susc_func = epi::infect::create_sigmoid_susceptibility_function(config_obj);
+    auto susc_func = epi::infect::create_sigmoid_susceptibility_function(
+        config_obj.susc_k, config_obj.susc_l, config_obj.susc_x0);
+
+    auto recovery_func = epi::infect::create_poisson_recovery_function(conf_rec_length);
 
     // Pass them to the Simulation constructor
-    Simulation simulation = Simulation(config_obj, infect_profile, susc_func);
+    Simulation simulation = Simulation(config_obj, infect_profile, susc_func, recovery_func);
 
     /*
     // To test the functions directly (after creating them as above):

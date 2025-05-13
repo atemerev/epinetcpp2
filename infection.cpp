@@ -4,32 +4,39 @@
 
 namespace epi::infect {
 
-InfectivityProfile create_const_infectivity_profile(const config& cfg) {
-    auto func = [beta = cfg.beta](double /*tau*/) { // tau is unused for constant infectivity
+InfectivityProfile create_const_infectivity_profile(double beta) {
+    auto func = [beta](double /*tau*/) { // tau is unused for constant infectivity
         return beta;
     };
     // For a constant function f(x) = C, the max value is C.
-    return {cfg.beta, func};
+    return {beta, func};
 }
 
-InfectivityProfile create_lognormal_infectivity_profile(const config& cfg) {
-    auto func = [inf_scale = cfg.inf_scale, inf_mean = cfg.inf_mean, inf_k = cfg.inf_k](double tau) {
-        return epi::logn(tau, inf_scale, inf_mean, inf_k);
+InfectivityProfile create_lognormal_infectivity_profile(double scale, double mean, double k, double max_value) {
+    auto func = [scale, mean, k](double tau) {
+        return epi::logn(tau, scale, mean, k);
     };
     // The max value for this profile is provided by cfg.inf_max
-    return {cfg.inf_max, func};
+    return {max_value, func};
 }
 
-std::function<double(double)> create_sigmoid_susceptibility_function(const config& cfg) {
-    return [susc_k = cfg.susc_k, susc_l = cfg.susc_l, susc_x0 = cfg.susc_x0](double tau) {
+std::function<double(double)> create_sigmoid_susceptibility_function(double k, double l, double x0) {
+    return [k, l, x0](double tau) {
         if (tau < 0) {
             return 0.0;
         } else {
-            double ex = std::exp(-susc_k * (tau - susc_x0));
+            double ex = std::exp(-k * (tau - x0));
             // Check for overflow before division
-            if (ex == HUGE_VAL) return 1.0; // or some other appropriate limit
-            return 1.0 - susc_l / (1.0 + ex);
+            if (ex == HUGE_VAL) return 1.0;
+            return 1.0 - l / (1.0 + ex);
         }
+    };
+}
+
+std::function<double(double)> create_poisson_recovery_function(double recovery_length_expectation) {
+    return [recovery_length_expectation](double tau) {
+        double u = epi::uniform();
+        return -std::log(u) / (1 / recovery_length_expectation);
     };
 }
 
