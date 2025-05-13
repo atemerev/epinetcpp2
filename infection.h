@@ -13,6 +13,9 @@ InfectivityProfile create_lognormal_infectivity_profile(double scale, double mea
 /// Creates a susceptibility function based on a sigmoid-like curve.
 std::function<double(double)> create_sigmoid_susceptibility_function(double k, double l, double x0);
 
+/// Create an exponential immunity decay susceptibility
+std::function<double(double)> create_exp_susceptibility_function(double time_to_immunity);
+
 std::function<double(double)> create_poisson_recovery_function(double recovery_length_expectation);
 
 } // namespace epi::infect

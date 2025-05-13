@@ -8,6 +8,7 @@ int main(int argc, char **argv) {
     double conf_beta = 0.2;
     double conf_inf_length = 10.0;
     double conf_rec_length = 20; // recovery (expectation) length
+    double conf_time_to_imm = 200; // time to immunity for exp immunity
     // double conf_inf_max = 0.10908;
     double conf_inf_max = 0.2;
     double conf_susc_k = -0.009776;
@@ -82,8 +83,10 @@ int main(int argc, char **argv) {
     // Or, to use lognormal infectivity:
     // auto infect_profile = epi::infect::create_lognormal_infectivity_profile(config_obj);
     
-    auto susc_func = epi::infect::create_sigmoid_susceptibility_function(
-        config_obj.susc_k, config_obj.susc_l, config_obj.susc_x0);
+    // auto susc_func = epi::infect::create_sigmoid_susceptibility_function(
+    //     config_obj.susc_k, config_obj.susc_l, config_obj.susc_x0);
+
+    auto susc_func = epi::infect::create_exp_susceptibility_function(conf_time_to_imm);
 
     auto recovery_func = epi::infect::create_poisson_recovery_function(conf_rec_length);
 
@@ -118,6 +121,8 @@ int main(int argc, char **argv) {
     }
     std::cout << "Average infections from one event: " << trials_sum / N_TRIALS << std::endl;
     */
+
+    // std::cout << "Susc test " << 1 - susc_func(10.634438077287712);
 
     simulation.simulate();
     return 0;

@@ -10,7 +10,8 @@ node tourist_node {
     .infectivity = 1.0,
     .susceptibility = 1.0,
     .last_recovery_time = 0,
-    .recovery_count = 0
+    .recovery_count = 0,
+    .infected = true
 };
 
 // Updated constructor definition
@@ -24,7 +25,7 @@ Simulation::Simulation(config &conf,
       susceptibility_func_(std::move(susc_func)),
       recovery_func_(std::move(recovery_func)) {
     for (int i = 0; i < cfg.N; i++) {
-        node n = {i, 0.0, conf.susc_initial, 0.0, 0};
+        node n = {i, 0.0, conf.susc_initial, 0.0, 0, false};
         nodes.push_back(n);
     }
     this->cases_by_day = std::map<int, int>();
@@ -79,6 +80,7 @@ void Simulation::simulate() {
                 this->infect(e);
                 break;
             case Recovery:
+            this->recover(e);
                 break;
         }
         Q.pop();
@@ -95,7 +97,7 @@ void Simulation::infect(event incoming_event) {
     } else if (incoming_node.last_recovery_time <= 0 && incoming_node.recovery_count == 0) { // Never infected before
         susceptibility_value = cfg.susc_initial;
     } else { // Previously infected, calculate based on time since last recovery
-        susceptibility_value = this->susceptibility_function(tau);
+        susceptibility_value = tau > 0 ? this->susceptibility_function(tau) : 0; // tau can be negative if recovery time is in the future
     }
 
     double rand_uni = epi::uniform();
@@ -106,12 +108,18 @@ void Simulation::infect(event incoming_event) {
 
     // infected
 
+    incoming_node.infected = true;
+
     // setting up recovery for the currently infected node
     double recovery_length = this->recovery_func_(incoming_event.time);
 
     if (incoming_event.node_index >=0) { // Regular nodes update their state
         incoming_node.last_recovery_time = incoming_event.time + recovery_length;
         incoming_node.recovery_count++;
+
+        // push recovery event
+        event new_recovery_event = {incoming_node.last_recovery_time, incoming_node.index, Recovery};
+        Q.push(new_recovery_event);
     }
     // Tourist node state doesn't need to be tracked in the same way for recovery
 
@@ -144,6 +152,11 @@ void Simulation::infect(event incoming_event) {
     }
 }
 
+void Simulation::recover(event incoming_event) {
+    node& incoming_node = this->nodes.at(incoming_event.node_index);
+    incoming_node.infected = false;
+}
+
 node& Simulation::select_contact() {
     std::uniform_int_distribution<> idist(0, (int) this->nodes.size() - 1);
     int i = idist(epi::mt());
@@ -153,13 +166,18 @@ node& Simulation::select_contact() {
 void Simulation::dump_state(int day, std::ostream& out) {
     int infected_count = 0; // Count of currently infectious individuals
     double total_susceptibility = 0;
-    double current_time_for_stats = static_cast<double>(day -1); // Stats for the completed day
+    double current_time_for_stats = static_cast<double>(day-1); // Stats for the completed day
 
     for (const node& n : this->nodes) {
         // A node is considered infectious if its last_recovery_time is in the future
         // relative to current_time_for_stats, but not further than inf_length ago from that future recovery time.
         // Essentially, current_time_for_stats < n.last_recovery_time AND n.last_recovery_time - current_time_for_stats <= cfg.inf_length
-        if (n.last_recovery_time > current_time_for_stats && (n.last_recovery_time - current_time_for_stats) <= this->cfg.inf_length) {
+
+        // if (n.last_recovery_time > current_time_for_stats && (n.last_recovery_time - current_time_for_stats) <= this->cfg.inf_length) {
+        //     infected_count++;
+        // }
+
+        if (n.infected) {
             infected_count++;
         }
 

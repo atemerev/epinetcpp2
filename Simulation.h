@@ -23,6 +23,7 @@ private:
     std::function<double(double)> recovery_func_;
 
     void infect(event incoming_event);
+    void recover(event incoming_event);
 
 public:
     // Modified constructor

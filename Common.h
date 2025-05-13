@@ -17,6 +17,7 @@ struct node {
     double susceptibility;
     double last_recovery_time;
     int recovery_count;
+    bool infected;
 };
 
 struct event {
