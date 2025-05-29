@@ -5,12 +5,12 @@
 int main(int argc, char **argv) {
     int conf_N = 100000;
     double conf_t_max = 365 * 2;
-    double conf_beta = 0.2;
-    double conf_inf_length = 10.0;
+    double conf_beta = 1.0;
+    double conf_inf_length = 20.0;
     double conf_rec_length = 20; // recovery (expectation) length
     double conf_time_to_imm = 200; // time to immunity for exp immunity
-    // double conf_inf_max = 0.10908;
-    double conf_inf_max = 0.2;
+     double conf_inf_max = 0.01;
+//    double conf_inf_max = 0.2;
     double conf_susc_k = -0.009776;
     double conf_susc_l = 1.0332;
     double conf_susc_x0 = 195.5736;
@@ -79,24 +79,26 @@ int main(int argc, char **argv) {
 
     // Create the functional objects using factories from infection.h
     // Example: using constant infectivity and sigmoid susceptibility
-    auto infect_profile = epi::infect::create_const_infectivity_profile(config_obj.beta);
+//    auto infect_profile = epi::infect::create_const_infectivity_profile(config_obj.beta);
     // Or, to use lognormal infectivity:
-    // auto infect_profile = epi::infect::create_lognormal_infectivity_profile(config_obj);
+    auto infect_profile = epi::infect::create_lognormal_infectivity_profile(config_obj.inf_scale, config_obj.inf_mean, config_obj.inf_k, config_obj.inf_max);
     
     // auto susc_func = epi::infect::create_sigmoid_susceptibility_function(
     //     config_obj.susc_k, config_obj.susc_l, config_obj.susc_x0);
 
-    auto susc_func = epi::infect::create_exp_susceptibility_function(conf_time_to_imm);
+//    auto susc_func = epi::infect::create_exp_susceptibility_function(conf_time_to_imm);
+    auto susc_func = epi::infect::create_sigmoid_susceptibility_function(config_obj.susc_k, config_obj.susc_l, config_obj.susc_x0);
 
-    auto recovery_func = epi::infect::create_poisson_recovery_function(conf_rec_length);
+//    auto recovery_func = epi::infect::create_poisson_recovery_function(conf_rec_length);
+    auto recovery_func = epi::infect::create_const_recovery_function(config_obj.inf_length);
 
     // Pass them to the Simulation constructor
     Simulation simulation = Simulation(config_obj, infect_profile, susc_func, recovery_func);
 
     /*
     // To test the functions directly (after creating them as above):
-    // std::cout << infect_profile.infectivity_function(3.0) << std::endl;
-    // std::cout << susc_func(108.0) << std::endl;
+//    std::cout << infect_profile.infectivity_function(3.0) << std::endl;
+//     std::cout << susc_func(108.0) << std::endl;
 
     // The get_inf_times is a member of Simulation, so test via an instance
     // std::vector<double> sp_inf_times =
@@ -107,6 +109,19 @@ int main(int argc, char **argv) {
 
 
     // The old test block for get_inf_times:
+    */
+
+    // std::cout << "Susc test " << 1 - susc_func(10.634438077287712);
+
+//    std::cout << infect_profile.infectivity_function(3.0) << std::endl;
+
+     std::vector<double> sp_inf_times =
+         simulation.get_inf_times(config_obj.beta, config_obj.inf_length);
+     for (double t : sp_inf_times) {
+         std::cout << t << std::endl;
+     }
+
+
     const double N_TRIALS = 1000; // This was outside main, ensure it's defined if used
 
     double trials_sum = 0.0;
@@ -120,11 +135,9 @@ int main(int argc, char **argv) {
         trials_sum += double(sp_inf_times.size());
     }
     std::cout << "Average infections from one event: " << trials_sum / N_TRIALS << std::endl;
-    */
 
-    // std::cout << "Susc test " << 1 - susc_func(10.634438077287712);
 
-    simulation.simulate();
+//    simulation.simulate();
     return 0;
 }
 // Note: The previous SEARCH block for main.cpp already contained the replacement for this section.

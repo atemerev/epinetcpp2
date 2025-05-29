@@ -33,13 +33,6 @@ public:
 
     ~Simulation();
 
-    // These now use the stored functional objects
-    [[nodiscard]] double infectiousness_function(double tau) const {
-        return infectivity_profile_.infectivity_function(tau);
-    }
-    [[nodiscard]] double susceptibility_function(double tau) const {
-        return susceptibility_func_(tau);
-    }
     void simulate();
 
     void dump_state(int day, std::ostream& out);
@@ -53,7 +46,7 @@ public:
             // 'beta' here is the overall rate for potential events from the config
             t = t - log(u) / beta;
             if (t < inf_length) {
-                double rate_at_t = infectiousness_function(t); // Actual infectivity at time t from profile
+                double rate_at_t = infectivity_profile_.infectivity_function(t); // Actual infectivity at time t from profile
                 double s = epi::uniform();
                 // Use max_function_value from the profile for thinning
                 if (infectivity_profile_.max_function_value > 0 && // Avoid division by zero or issues with 0 max

@@ -97,7 +97,7 @@ void Simulation::infect(event incoming_event) {
     } else if (incoming_node.last_recovery_time <= 0 && incoming_node.recovery_count == 0) { // Never infected before
         susceptibility_value = cfg.susc_initial;
     } else { // Previously infected, calculate based on time since last recovery
-        susceptibility_value = tau > 0 ? this->susceptibility_function(tau) : 0; // tau can be negative if recovery time is in the future
+        susceptibility_value = tau > 0 ? this->susceptibility_func_(tau) : 0; // tau can be negative if recovery time is in the future
     }
 
     double rand_uni = epi::uniform();
@@ -185,11 +185,11 @@ void Simulation::dump_state(int day, std::ostream& out) {
         if (n.recovery_count == 0) { // Never infected
              susceptibility_value = this->cfg.susc_initial;
         } else {
-            // Time since last recovery event completed.
-            // If n.last_recovery_time is in the future, node is still infected or immune from that event.
-            // The susceptibility function should ideally take time since *end* of infectious period.
+            // Time since the last recovery event completed.
+            // If n.last_recovery_time is in the future, the node is still infected or immune from that event.
+            // The susceptibility function should ideally take time from *end* of the infectious period.
             double time_since_immunity_waning_started = current_time_for_stats - n.last_recovery_time;
-            susceptibility_value = this->susceptibility_function(time_since_immunity_waning_started);
+            susceptibility_value = this->susceptibility_func_(time_since_immunity_waning_started);
         }
         total_susceptibility += susceptibility_value;
     }

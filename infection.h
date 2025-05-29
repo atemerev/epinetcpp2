@@ -18,4 +18,6 @@ std::function<double(double)> create_exp_susceptibility_function(double time_to_
 
 std::function<double(double)> create_poisson_recovery_function(double recovery_length_expectation);
 
+std::function<double(double)> create_const_recovery_function(double recovery_length);
+
 } // namespace epi::infect
