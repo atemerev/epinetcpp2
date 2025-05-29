@@ -37,7 +37,6 @@ struct config {
     double beta;
 
     double inf_length;
-    double inf_max;
 
     double susc_k;
     double susc_l;

@@ -18,7 +18,7 @@ private:
     std::map<int, int> cases_by_day;
 
     // Store the functional objects
-    InfectivityProfile infectivity_profile_;
+    std::function<double(double)> infectivity_func_;
     std::function<double(double)> susceptibility_func_;
     std::function<double(double)> recovery_func_;
 
@@ -35,19 +35,15 @@ private:
         double max_val = 0.0;
 
         // Trapezoidal rule + max finding
-        double prev_val = infectivity_profile_.infectivity_function(0.0);
+        double prev_val = infectivity_func_(0.0);
         max_val = prev_val;
 
         for (int i = 1; i <= n_steps; ++i) {
             double t = i * dt;
-            double curr_val = infectivity_profile_.infectivity_function(t);
+            double curr_val = infectivity_func_(t);
 
-            // Update integral (trapezoidal rule)
             integral += 0.5 * (prev_val + curr_val) * dt;
-
-            // Update maximum
             max_val = std::max(max_val, curr_val);
-
             prev_val = curr_val;
         }
 
@@ -56,8 +52,7 @@ private:
     }
 
 public:
-    // Modified constructor
-    explicit Simulation(config& cfg, InfectivityProfile infect_profile,
+    explicit Simulation(config& cfg, std::function<double(double)> infectivity_func,
         std::function<double(double)> susc_func,
         std::function<double(double)> recovery_func);
 
@@ -85,7 +80,7 @@ public:
             t = t - log(u) / adjusted_rate;
 
             if (t < inf_length) {
-                double rate_at_t = infectivity_profile_.infectivity_function(t);
+                double rate_at_t = infectivity_func_(t);
                 double s = epi::uniform();
 
                 if (s < rate_at_t / precomputed_max_value_) {

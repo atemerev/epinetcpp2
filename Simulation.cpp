@@ -15,12 +15,12 @@ node tourist_node {
 };
 
 Simulation::Simulation(config &conf,
-                       InfectivityProfile infect_profile,
+                       std::function<double(double)> infectivity_func,
                        std::function<double(double)> susc_func,
                        std::function<double(double)> recovery_func
                        )
     : cfg(conf),
-      infectivity_profile_(std::move(infect_profile)),
+      infectivity_func_(std::move(infectivity_func)),
       susceptibility_func_(std::move(susc_func)),
       recovery_func_(std::move(recovery_func)) {
     for (int i = 0; i < cfg.N; i++) {

@@ -9,16 +9,14 @@ int main(int argc, char **argv) {
     double conf_inf_length = 20.0;
     double conf_rec_length = 20; // recovery (expectation) length
     double conf_time_to_imm = 200; // time to immunity for exp immunity
-     double conf_inf_max = 0.01;
-//    double conf_inf_max = 0.2;
     double conf_susc_k = -0.009776;
     double conf_susc_l = 1.0332;
     double conf_susc_x0 = 195.5736;
     double conf_inf_scale = 0.2577;
     double conf_inf_mean = 1.4915;
     double conf_inf_k = 0.293;
-    double conf_sp_lambda = 0;
-    double conf_susc_initial = 1.0;
+    double conf_sp_lambda = 0.00;
+    double conf_susc_initial = 0.7;
     int conf_n_initial = 1;
 
     std::string conf_output_file = "out.csv";
@@ -35,8 +33,6 @@ int main(int argc, char **argv) {
     app.add_option("-f,--output-file", conf_output_file, "Output file name");
     app.add_option("-i,--infection-length", conf_inf_length,
                    "Disease infection interval cutoff");
-    app.add_option("-M,--max_infection", conf_inf_max,
-                   "Max infectiousness level cutoff");
     app.add_option("-k,--k-susceptibility", conf_susc_k,
                    "Susceptibility: shape parameter");
     app.add_option("-l,--l-susceptibility", conf_susc_l,
@@ -65,7 +61,6 @@ int main(int argc, char **argv) {
                      .t_max = conf_t_max,
                      .beta = conf_beta,
                      .inf_length = conf_inf_length,
-                     .inf_max = conf_inf_max,
                      .susc_k = conf_susc_k,
                      .susc_l = conf_susc_l,
                      .susc_x0 = conf_susc_x0,
@@ -77,44 +72,19 @@ int main(int argc, char **argv) {
                      .susc_initial = conf_susc_initial,
                      .output_file = conf_output_file};
 
-    // Create the functional objects using factories from infection.h
-    // Example: using constant infectivity and sigmoid susceptibility
-//    auto infect_profile = epi::infect::create_const_infectivity_profile(config_obj.beta);
-    // Or, to use lognormal infectivity:
-    auto infect_profile = epi::infect::create_lognormal_infectivity_profile(config_obj.inf_scale, config_obj.inf_mean, config_obj.inf_k, config_obj.inf_max);
+//    auto infectivity_func = epi::infect::create_const_infectivity_function(config_obj.beta);
+    auto infectivity_func =
+        epi::infect::create_lognormal_infectivity_function(config_obj.inf_scale, config_obj.inf_mean, config_obj.inf_k);
     
-    // auto susc_func = epi::infect::create_sigmoid_susceptibility_function(
-    //     config_obj.susc_k, config_obj.susc_l, config_obj.susc_x0);
-
 //    auto susc_func = epi::infect::create_exp_susceptibility_function(conf_time_to_imm);
     auto susc_func = epi::infect::create_sigmoid_susceptibility_function(config_obj.susc_k, config_obj.susc_l, config_obj.susc_x0);
 
 //    auto recovery_func = epi::infect::create_poisson_recovery_function(conf_rec_length);
     auto recovery_func = epi::infect::create_const_recovery_function(config_obj.inf_length);
 
-    // Pass them to the Simulation constructor
-    Simulation simulation = Simulation(config_obj, infect_profile, susc_func, recovery_func);
+    Simulation simulation = Simulation(config_obj, infectivity_func, susc_func, recovery_func);
 
-    /*
-    // To test the functions directly (after creating them as above):
-//    std::cout << infect_profile.infectivity_function(3.0) << std::endl;
-//     std::cout << susc_func(108.0) << std::endl;
-
-    // The get_inf_times is a member of Simulation, so test via an instance
-    // std::vector<double> sp_inf_times =
-    //     simulation.get_inf_times(config_obj.beta, config_obj.inf_length);
-    // for (double t : sp_inf_times) {
-    //     std::cout << t << std::endl;
-    // }
-
-
-    // The old test block for get_inf_times:
-    */
-
-    // std::cout << "Susc test " << 1 - susc_func(10.634438077287712);
-
-//    std::cout << infect_profile.infectivity_function(3.0) << std::endl;
-
+/*
      std::vector<double> sp_inf_times =
          simulation.get_inf_times(config_obj.beta, config_obj.inf_length);
      for (double t : sp_inf_times) {
@@ -135,12 +105,10 @@ int main(int argc, char **argv) {
         trials_sum += double(sp_inf_times.size());
     }
     std::cout << "Average infections from one event: " << trials_sum / N_TRIALS << std::endl;
+*/
 
 
-//    simulation.simulate();
+    simulation.simulate();
     return 0;
 }
-// Note: The previous SEARCH block for main.cpp already contained the replacement for this section.
-// This SEARCH block is based on the original state of main.cpp provided.
-// The changes above have already integrated the test block correctly.
-// This block is effectively a no-op if the previous main.cpp changes were applied.
+

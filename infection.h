@@ -5,10 +5,10 @@
 namespace epi::infect {
 
 /// Creates an InfectivityProfile for a constant infectivity model.
-InfectivityProfile create_const_infectivity_profile(double beta);
+std::function<double(double)> create_const_infectivity_function(double beta);
 
 /// Creates an InfectivityProfile for a log-normal infectivity model.
-InfectivityProfile create_lognormal_infectivity_profile(double scale, double mean, double k, double max_value);
+std::function<double(double)> create_lognormal_infectivity_function(double scale, double mean, double k);
 
 /// Creates a susceptibility function based on a sigmoid-like curve.
 std::function<double(double)> create_sigmoid_susceptibility_function(double k, double l, double x0);

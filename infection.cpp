@@ -4,20 +4,18 @@
 
 namespace epi::infect {
 
-InfectivityProfile create_const_infectivity_profile(double beta) {
+std::function<double(double)> create_const_infectivity_function(double beta) {
     auto func = [beta](double /*tau*/) { // tau is unused for constant infectivity
         return beta;
     };
-    // For a constant function f(x) = C, the max value is C.
-    return {beta, func};
+    return func;
 }
 
-InfectivityProfile create_lognormal_infectivity_profile(double scale, double mean, double k, double max_value) {
+std::function<double(double)> create_lognormal_infectivity_function(double scale, double mean, double k) {
     auto func = [scale, mean, k](double tau) {
         return epi::logn(tau, scale, mean, k);
     };
-    // The max value for this profile is provided by cfg.inf_max
-    return {max_value, func};
+    return func;
 }
 
 std::function<double(double)> create_sigmoid_susceptibility_function(double k, double l, double x0) {
