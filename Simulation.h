@@ -25,6 +25,36 @@ private:
     void infect(event incoming_event);
     void recover(event incoming_event);
 
+    double precomputed_integral_;
+    double precomputed_max_value_;
+
+    void compute_integral_numerically(double inf_length) {
+        const int n_steps = 1000;
+        double dt = inf_length / n_steps;
+        double integral = 0.0;
+        double max_val = 0.0;
+
+        // Trapezoidal rule + max finding
+        double prev_val = infectivity_profile_.infectivity_function(0.0);
+        max_val = prev_val;
+
+        for (int i = 1; i <= n_steps; ++i) {
+            double t = i * dt;
+            double curr_val = infectivity_profile_.infectivity_function(t);
+
+            // Update integral (trapezoidal rule)
+            integral += 0.5 * (prev_val + curr_val) * dt;
+
+            // Update maximum
+            max_val = std::max(max_val, curr_val);
+
+            prev_val = curr_val;
+        }
+
+        precomputed_integral_ = integral;
+        precomputed_max_value_ = max_val;
+    }
+
 public:
     // Modified constructor
     explicit Simulation(config& cfg, InfectivityProfile infect_profile,
@@ -40,22 +70,25 @@ public:
     [[nodiscard]]
     std::vector<double> get_inf_times(double beta, double inf_length) const {
         std::vector<double> result;
+
+        // Handle edge cases
+        if (beta <= 0 || precomputed_integral_ <= 0 || precomputed_max_value_ <= 0) {
+            return result;
+        }
+
+        // Properly normalized rate for thinning
+        double adjusted_rate = (beta * inf_length) * precomputed_max_value_ / precomputed_integral_;
+
         double t = 0;
         while (t < inf_length) {
             double u = epi::uniform();
-            // 'beta' here is the overall rate for potential events from the config
-            t = t - log(u) / beta;
+            t = t - log(u) / adjusted_rate;
+
             if (t < inf_length) {
-                double rate_at_t = infectivity_profile_.infectivity_function(t); // Actual infectivity at time t from profile
+                double rate_at_t = infectivity_profile_.infectivity_function(t);
                 double s = epi::uniform();
-                // Use max_function_value from the profile for thinning
-                if (infectivity_profile_.max_function_value > 0 && // Avoid division by zero or issues with 0 max
-                    s < rate_at_t / infectivity_profile_.max_function_value) {
-                    result.push_back(t);
-                } else if (infectivity_profile_.max_function_value == 0 && rate_at_t > 0) {
-                    // If max is 0 but rate is positive, this is an edge case.
-                    // Depending on model, might mean always accept or is an error.
-                    // For now, let's assume if rate_at_t > 0 and max_value is 0, it's a valid event.
+
+                if (s < rate_at_t / precomputed_max_value_) {
                     result.push_back(t);
                 }
             }

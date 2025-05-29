@@ -14,7 +14,6 @@ node tourist_node {
     .infected = true
 };
 
-// Updated constructor definition
 Simulation::Simulation(config &conf,
                        InfectivityProfile infect_profile,
                        std::function<double(double)> susc_func,
@@ -30,6 +29,7 @@ Simulation::Simulation(config &conf,
     }
     this->cases_by_day = std::map<int, int>();
     this->output = std::ofstream(conf.output_file);
+    compute_integral_numerically(conf.inf_length);
 }
 
 Simulation::~Simulation() {
@@ -137,7 +137,7 @@ void Simulation::infect(event incoming_event) {
 
     // spreading infection to other nodes
     // The 'cfg.beta' passed to get_inf_times is used as the base rate for Poisson generation of potential contact times.
-    // The actual thinning uses the infectivity_profile_ (via this->infectiousness_function).
+
     std::vector<double> inf_times = this->get_inf_times(cfg.beta, recovery_length);
 
     for (double t_inf : inf_times) {
